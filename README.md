@@ -40,6 +40,8 @@ npm run build      # type-check + production build
 
 1. Request a free instance at developer.servicenow.com.
 2. `cp .env.example .env` and fill in `SN_INSTANCE`, `SN_USER`, `SN_PASSWORD`, and `VITE_USE_PDI=true`.
+   - Quote the password (`SN_PASSWORD='...'`). ServiceNow-generated passwords often contain `#`, which the `.env` parser otherwise treats as a comment, and the result is a confusing 401.
+   - Prefer a dedicated integration user over `admin`: identity type *Machine*, *Internal Integration User* checked, role `itil`.
 3. `npm run dev`. Requests to `/api/now/...` are proxied to the instance with Basic auth.
 
 ## Table API details used
@@ -48,3 +50,4 @@ npm run build      # type-check + production build
 - The total count comes from the `X-Total-Count` response header.
 - `POST /api/now/table/{table}` with a JSON body to create a record. ServiceNow errors (`error.message`) surface as `TableApiError`.
 - The mock computes priority from impact × urgency (priority = impact + urgency − 1).
+- `X-Total-Count` is computed **before** access rules (ACLs) filter rows. A user without read access to some records gets short pages. The controller tracks `hiddenOnPage` and the table says so, instead of silently showing fewer rows. (Found while testing against a PDI with a user that lacked the `itil` role.)

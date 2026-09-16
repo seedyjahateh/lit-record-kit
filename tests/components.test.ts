@@ -91,6 +91,13 @@ describe('record-table', () => {
     expect(offset).toBe(2);
   });
 
+  it('explains when access rules hid rows on the page', async () => {
+    const el = await table({ hiddenCount: 2 });
+    expect(el.shadowRoot!.querySelector('.note')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('2 records on this page are hidden by access rules.');
+    const none = await table({ hiddenCount: 0 });
+    expect(none.shadowRoot!.querySelector('.note')).toBeNull();
+  });
+
   it('shows the empty state when there are no records', async () => {
     const el = await table({ records: [], total: 0 });
     expect(el.shadowRoot!.querySelector('.empty')?.textContent?.trim()).toBe('No records found');

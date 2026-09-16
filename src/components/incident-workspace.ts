@@ -117,6 +117,7 @@ export class IncidentWorkspace extends LitElement {
           .sortDesc=${!!c.query.desc}
           .loading=${c.status === 'loading'}
           .error=${c.error}
+          .hiddenCount=${c.hiddenOnPage}
           @sort-change=${(e: SortChangeEvent) => c.sortBy(e.detail.field, e.detail.desc)}
           @page-change=${(e: PageChangeEvent) => c.setOffset(e.detail.offset)}
           @row-select=${(e: RowSelectEvent) => (this.selected = e.detail.record)}

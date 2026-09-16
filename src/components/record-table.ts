@@ -63,6 +63,10 @@ export class RecordTable extends LitElement {
     .error {
       color: #b91c1c;
     }
+    .note {
+      color: #92400e;
+      font-size: 0.9em;
+    }
     .pager {
       display: flex;
       gap: 0.5rem;
@@ -85,11 +89,19 @@ export class RecordTable extends LitElement {
   @property({ type: Boolean }) loading = false;
   @property() error = '';
   @property({ attribute: 'key-field' }) keyField = 'sys_id';
+  /** Rows on this page the current user can't see (access rules filtered them out). */
+  @property({ type: Number, attribute: 'hidden-count' }) hiddenCount = 0;
 
   render() {
     return html`
       <div aria-busy=${this.loading ? 'true' : 'false'}>
         ${this.error ? html`<p class="error" role="alert">${this.error}</p>` : nothing}
+        ${this.hiddenCount > 0 && !this.loading
+          ? html`<p class="note" role="note">
+              ${this.hiddenCount} record${this.hiddenCount === 1 ? '' : 's'} on this page ${this.hiddenCount === 1 ? 'is' : 'are'} hidden by
+              access rules.
+            </p>`
+          : nothing}
         <div class="scroll">
         <table>
           <thead>

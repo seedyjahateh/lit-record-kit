@@ -10,6 +10,11 @@ export type LoadStatus = 'idle' | 'loading' | 'ready' | 'error';
 export class RecordListController implements ReactiveController {
   records: RecordRow[] = [];
   total = 0;
+  /**
+   * Rows missing from the current page. The Table API's X-Total-Count is computed before ACLs
+   * filter rows, so a user without read access to some records gets short pages.
+   */
+  hiddenOnPage = 0;
   status: LoadStatus = 'idle';
   error = '';
   query: TableQuery;
@@ -39,10 +44,13 @@ export class RecordListController implements ReactiveController {
       if (id !== this.requestId) return; // superseded by a newer request; drop the stale response
       this.records = page.records;
       this.total = page.total;
+      const expected = Math.max(0, Math.min(this.query.limit, page.total - this.query.offset));
+      this.hiddenOnPage = Math.max(0, expected - page.records.length);
       this.status = 'ready';
     } catch (e) {
       if (id !== this.requestId) return;
       this.records = [];
+      this.hiddenOnPage = 0;
       this.error = e instanceof Error ? e.message : String(e);
       this.status = 'error';
     }

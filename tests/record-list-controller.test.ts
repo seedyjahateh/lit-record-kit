@@ -45,6 +45,22 @@ describe('RecordListController', () => {
     expect(c.total).toBe(4);
   });
 
+  it('counts rows hidden by access rules when a page comes back short', async () => {
+    const acl: TableSource = {
+      // total counts all 68 rows, but only 1 of the 3 requested is readable
+      list: async () => ({ records: [{ number: 'INC0010001' }], total: 68 }),
+      create: () => Promise.reject(new Error('unused')),
+    };
+    const c = new RecordListController(new FakeHost(), acl, { ...baseQuery, limit: 3 });
+    await c.load();
+    expect(c.hiddenOnPage).toBe(2);
+    // the last page is legitimately short, so nothing is "hidden" there
+    const lastPage: TableSource = { list: async () => ({ records: [{ number: 'A' }], total: 11 }), create: acl.create };
+    const c2 = new RecordListController(new FakeHost(), lastPage, { ...baseQuery, limit: 5, offset: 10 });
+    await c2.load();
+    expect(c2.hiddenOnPage).toBe(0);
+  });
+
   it('surfaces source errors', async () => {
     const failing: TableSource = {
       list: () => Promise.reject(new Error('boom')),
